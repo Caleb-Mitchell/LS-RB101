@@ -1,3 +1,5 @@
+require 'yaml'
+MESSAGES = YAML.load_file('calculator_messages.yml')
 # frozen_string_literal: true
 
 # ask the user for two numbers
@@ -12,31 +14,45 @@ def prompt(message)
   Kernel.puts("=> #{message}")
 end
 
-def valid_number?(num)
-  num.to_i() != 0
+# def valid_number?(num)
+#   num.to_i() != 0
+# end
+
+# def valid_integer?(num)
+#   num.to_i().to_s() == num
+# end
+
+def number?(num)
+  integer?(num) || float?(num)
+end
+
+def float?(num)
+  num.to_f().to_s() == num
 end
 
 def operation_to_message(op)
-  case op
-  when '1'
-    'Adding'
-  when '2'
-    'Subtracting'
-  when '3'
-    'Multiplying'
-  when '4'
-    'Dividing'
-  end
+  word = case op
+         when '1'
+           'Adding'
+         when '2'
+           'Subtracting'
+         when '3'
+           'Multiplying'
+         when '4'
+           'Dividing'
+         end
+
+  word
 end
 
-prompt("Welcome to Calculator! Enter your name:")
+prompt(MESSAGES['welcome'])
 
 name = ''
 loop do
   name = Kernel.gets().chomp()
 
   if name.empty?()
-    prompt("Make sure to use a valid name.")
+    prompt(MESSAGES['valid_name'])
   else
     break
   end

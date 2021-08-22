@@ -14,9 +14,15 @@ asking. Take some time to allow the problem to load into your brain.
 
 First, identify the inputs and the outputs of the problem.
 
--  Inputs:
--  Output:
+-  Inputs: 
+1. the loan amount
+2. the annual percentage rate (APR)
+3. the loan duration
 
+-  Output:
+1. monthly payment amount
+2. total of the monthly payments (including number of months)
+3. total interest
 ---
 
 Check for Problem Domain: the Problem Domain is the area of expertise or
@@ -31,20 +37,33 @@ make sure you know what multiples are.
 Could one word have multiple meanings? etc
 
 **Problem Domain:**
-
+interest based payments
+use this formula:
+m = p * (j / (1 - (1 + j)**(-n)))
+m = monthly payment
+p = loan amount
+j = monthly interest rate
+n = loan duration in months
 ---
 
 What are the rules explicitly mentioned in the problem definition?
 
 **Rules:**
-
+1. don't use single-letter variables
+2. run the code through robocop
+3. interest rates should likely be a decimal number or float (i.e. 5% is 0.05)
+4. APR is annual, needs to be converted to monthly interest rate
+5. loan duration is in months!
 ---
 
 Check for Implicit Requirements. Are there requirements that are not explicitly
 stated?
 
 **Implicit Requirements:**
-
+1. Loan duration must be greater than 0
+2. all inputs should be validated numeric values
+3. need to also figure the number of monthly payments, the total of those payments,
+as well as the total interest
 ---
 
 Some questions to ask the interviewer (or perhaps yourself) to better understand
@@ -52,8 +71,9 @@ the problem.
 
 **Clarifying Questions:**
 
-1.
-2.
+1. What is the highest possible APR? over 100%? (there's no ceiling)
+2. What all values should I output? should i include the total of payments made,
+as well as the total interest, as in the example calculator?
 3.
 
 ---
@@ -70,6 +90,10 @@ and accurately, captures the requirements of the problem.
 
 **Mental Model:**
 
+If a user provides a loan amount, an APR value, and a duration of the loan, calculate and provide them
+with the monthly payment amount, the total of however many monthly payments (including how many months),
+and the total interest that has accrued.
+
 ---
 
 Examples / Test Cases / Edge Cases
@@ -83,10 +107,22 @@ the confirmation will come from documentation of a process, or a person.
 
 -  Example 1
   -  Inputs:
+loan amount = 1000
+APR = 10%
+loan duration = 1 year
   -  Output:
+monthly payment = $87.92
+total of (12) payments = $1_054.99
+total interest = 54.99
 -  Example 2
   -  Inputs:
+loan amount = 50_000
+APR = 2%
+loan duration = 6 months
   -  Output:
+monthly payment = $8,383.01
+total of (6) payments = $50,292.07
+total interest = $292.07
 
 ---
 
@@ -116,8 +152,21 @@ _Your Test Cases:_
 
 -  Example 3
   -  Inputs:
+loan amount = 0
+APR = 5%
+loan duration = 1 year
   -  Output:
+monthly payment = 0
+total of (12) payments = 0
+total interest = 0
 
+- Example 4
+ - Inputs:
+ loan amount = 1000
+ APR = 5%
+ loan duration = 0
+ - Output:
+ ERROR: Please provide a positive loan term value
 ---
 
 **Edge Cases:**
@@ -132,7 +181,23 @@ _Your Edge Cases:_
 
 -  Example 4
   -  Inputs:
+  loan amount = 1000
+  APR = 500
+  loan duration = 1 year
   -  Output:
+  monthly payments = 423.14
+  total of (12) payments = 5,077.71
+  total interest = 4,077.71
+
+- Example 5
+  - Inputs:
+  loan amount = 1,000,000
+  apr = 1,000
+  loan duration = 100 years
+  - Output:
+  monthly payments = 833,333.33
+  total of (1,200) payments = 1,000,000,000.00 (i think this is limit of example calculator)
+  total interest = 999,000,000.00
 
 ---
 
@@ -147,6 +212,8 @@ mental model.
 
 Are you going to use arrays, hashes, etc? Your data structure will influence
 your program.
+
+None necessary
 
 ---
 
@@ -172,7 +239,84 @@ transform the input into the desired output.
 -  Before implementing the algorithm, you should test it manually with test
    cases.
 
+mental model again:
+If a user provides a loan amount, an APR value, and a duration of the loan, calculate and provide them
+with the monthly payment amount, the total of however many monthly payments (including how many months),
+and the total interest that has accrued.
+
+1. Ask user for loan amount
+  - validate is valid float or integer
+2. Ask user for APR value
+  - validate is valid float or integer
+3. Ask user for duration of the loan
+  - validate is valid float or integer
+  - validate is greater than zero
+4. Perform calculations
+  - convert APR to monthly interest rate
+  - convert loan duration to months
+  - monthly payment amount
+  - total of all monthly payments
+  - total interest (total of all monthly payments - original loan amount)
+5. Display values to user
+
 Code
 ----
 
 =end
+
+def prompt(text)
+  puts "=> #{text}"
+end
+
+def integer?(num)
+  num.to_i.to_s == num
+end
+
+def float?(num)
+  num.to_i.to_f == num
+end
+
+def number?(num)
+  integer?(num) || float?(num)
+end
+
+prompt('Welcome to Mortgage Calculator.')
+prompt('Let\'s start with a few questions.')
+
+loan_amount = ''
+loop do
+  prompt('What is the size of the loan?:')
+
+  loan_amount = gets.chomp
+  break if number?(loan_amount)
+  puts('Please enter a valid loan amount:')
+end
+
+apr = ''
+loop do
+  prompt('What % is the interest rate?:')
+
+  apr = gets.chomp
+  break if number?(apr)
+  puts('Please enter a valid APR percentage.')
+end
+
+loan_duration = ''
+loop do
+  prompt('What is the duration of the loan, in months.')
+
+  loan_duration = gets.chomp
+  break if (number?(loan_duration) && loan_duration.to_i > 0)
+  puts('Please enter a valid number of months.')
+end
+
+monthly_interest_rate = (apr.to_f / 100) / 12.0
+
+monthly_payment = loan_amount.to_f * (monthly_interest_rate.to_f / (1 - (1 + monthly_interest_rate.to_f)**(loan_duration.to_i * -1)))
+
+payments_total = monthly_payment * loan_duration.to_i
+total_interest = payments_total - loan_amount.to_f
+
+puts "monthly payment = #{monthly_payment}"
+puts "total of monthly payments = #{payments_total}"
+puts "total interest = #{total_interest}"

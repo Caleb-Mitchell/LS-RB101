@@ -1,26 +1,32 @@
 require 'yaml'
-require 'pry'
 
-# MESSAGES = YAML.load_file('calculator_messages.yml')
+MESSAGES = YAML.load_file('calculator_messages.yml')
+LANGUAGE = 'en'
 
 # ask the user for two numbers
 # ask the user for an operation to perform
 # perform the operation on the two numbers
 # output the result
 
-# answer = Kernel.gets()
-# Kernel.puts(answer)
+def messages(message, lang='en')
+  MESSAGES[lang][message]
+end
 
-def prompt(message)
+def prompt(key)
+  message = messages(key, LANGUAGE)
   Kernel.puts("=> #{message}")
 end
 
-def number?(num)
-  integer?(num) || float?(num)
+def integer?(input)
+  input.to_i.to_s == input
 end
 
 def float?(num)
   num.to_f().to_s() == num
+end
+
+def number?(num)
+  integer?(num) || float?(num)
 end
 
 def operation_to_message(op)
@@ -37,24 +43,14 @@ def operation_to_message(op)
   word
 end
 
-# prompt(MESSAGES['language'])
-puts "What language do you speak?"
-user_language = gets.chomp.downcase
-
-if user_language =~ /english/
-  MESSAGES = YAML.load_file('calculator_messages.yml')
-elsif user_language =~ /spanish/
-  MESSAGES = YAML.load_file('calculator_messages_spanish.yml')
-end
-
-prompt(MESSAGES['welcome'])
+prompt('welcome')
 
 name = ''
 loop do
   name = Kernel.gets().chomp()
 
   if name.empty?()
-    prompt(MESSAGES['valid_name'])
+    prompt('valid_name')
   else
     break
   end
@@ -65,25 +61,25 @@ prompt("Hi #{name}!")
 loop do # main loop
   number1 = ''
   loop do
-    prompt(MESSAGES['first_number'])
+    prompt('first_number')
     number1 = Kernel.gets().chomp()
 
     if number?(number1)
       break
     else
-      prompt(MESSAGES['not_valid'])
+      prompt('not_valid')
     end
   end
 
   number2 = ''
   loop do
-    prompt(MESSAGES['second_number'])
+    prompt('second_number')
     number2 = Kernel.gets().chomp()
 
     if number?(number2)
       break
     else
-      prompt(MESSAGES['not_valid'])
+      prompt('not_valid')
     end
   end
 
@@ -104,7 +100,7 @@ loop do # main loop
     if %w(1 2 3 4).include?(operator)
       break
     else
-      prompt(MESSAGES['must_choose'])
+      prompt('must_choose')
     end
   end
 
@@ -123,9 +119,9 @@ loop do # main loop
 
   prompt("The result is #{result}")
 
-  prompt(MESSAGES['again'])
+  prompt('again')
   answer = Kernel.gets().chomp()
   break unless answer.downcase().start_with?('y')
 end
 
-prompt(MESSAGES['thanks'])
+prompt('thanks')

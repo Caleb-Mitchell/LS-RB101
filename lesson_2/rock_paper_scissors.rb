@@ -11,6 +11,37 @@ def prompt(message)
   Kernel.puts("=> #{message}")
 end
 
+def interpret_abbrev(choice)
+  case choice
+  when 'r'
+    'rock'
+  when 'p'
+    'paper'
+  when 'l'
+    'lizard'
+  when 'sc'
+    'scissors'
+  when 'sp'
+    'spock'
+  when 's'
+    spock_or_scissors
+  end
+end
+
+def spock_or_scissors
+  loop do
+    prompt('Please input "sc" for scissors, or "sp" for spock')
+    new_abbr = gets().chomp()
+    if new_abbr == "sc"
+      return "scissors"
+    elsif new_abbr == "sp"
+      return "spock"
+    else
+      next
+    end
+  end
+end
+
 def win?(first, second)
   WINNING_MOVES[first].include?(second)
 end
@@ -30,6 +61,10 @@ loop do
   loop do
     prompt("Choose one: #{VALID_CHOICES.join(', ')}")
     choice = Kernel.gets().chomp()
+
+    if choice.size == 1 || choice.size == 2
+      choice = interpret_abbrev(choice)
+    end
 
     if VALID_CHOICES.include?(choice)
       break

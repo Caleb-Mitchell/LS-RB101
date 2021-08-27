@@ -7,6 +7,16 @@ WINNING_MOVES = {
   'lizard' => ['paper', 'spock']
 }
 
+def clear_screen
+  puts "\e[H\e[2J"
+end
+
+def reset_game(score)
+  score[0] = 0
+  score[1] = 0
+  clear_screen
+end
+
 def prompt(message)
   Kernel.puts("=> #{message}")
 end
@@ -48,9 +58,9 @@ end
 
 def display_result(player, computer)
   if win?(player, computer)
-    prompt("You won!")
+    prompt("==You won!==")
   elsif win?(computer, player)
-    prompt("Computer won!")
+    prompt("==Computer won!==")
   else
     prompt("It's a tie!")
   end
@@ -66,9 +76,11 @@ end
 
 def display_score(score)
   current_score = <<-MSG
- The current score is:
+ ---------------------
+    The current score is:
     Player: #{score[0]}
     Computer: #{score[1]}
+    ---------------------
   MSG
 
   prompt(current_score)
@@ -80,9 +92,9 @@ end
 
 def display_game_winner(score)
   if score[0] == 3
-    prompt("You are the grand winner!")
+    prompt("==You are the grand winner!==")
   elsif score[1] == 3
-    prompt("The computer is the grand winner!")
+    prompt("==The computer is the grand winner!==")
   end
 end
 
@@ -90,7 +102,8 @@ score = [0, 0]
 loop do
   choice = ''
   loop do
-    prompt("Choose one: #{VALID_CHOICES.join(', ')}")
+    # prompt("Choose one: #{VALID_CHOICES.join(', ')}")
+    prompt("Choose one: (r)ock, (p)aper, (sc)issors, (l)izard, (sp)ock")
     choice = Kernel.gets().chomp()
 
     if choice.size() == 1 || choice.size() == 2
@@ -120,7 +133,7 @@ loop do
     answer = Kernel.gets().chomp()
     break unless answer.downcase().start_with?('y')
 
-    score = [0, 0]
+    reset_game(score)
   end
 end
 

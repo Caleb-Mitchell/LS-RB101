@@ -56,6 +56,12 @@ def display_result(player, computer)
   end
 end
 
+def tally_score(player_win_bool)
+end
+
+game_number = 0
+score = [0, 0]
+
 loop do
   choice = ''
   loop do
@@ -79,9 +85,9 @@ loop do
 
   display_result(choice, computer_choice)
 
-  prompt("Do you want to play again?")
-  answer = Kernel.gets().chomp()
-  break unless answer.downcase().start_with?('y')
+  # prompt("Do you want to play again?")
+  # answer = Kernel.gets().chomp()
+  # break unless answer.downcase().start_with?('y')
 end
 
 prompt("Thank you for playing. Good bye!")

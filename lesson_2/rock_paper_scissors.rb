@@ -58,9 +58,9 @@ end
 
 def display_result(player, computer)
   if win?(player, computer)
-    prompt("==You won!==")
+    prompt("==You win the round!==")
   elsif win?(computer, player)
-    prompt("==Computer won!==")
+    prompt("==Computer wins the round!==")
   else
     prompt("It's a tie!")
   end
@@ -72,6 +72,23 @@ def tally_score(score, player_win_bool)
   else
     score[1] += 1
   end
+end
+
+def display_welcome
+  welcome_message = <<-MSG
+Welcome to Rock-Paper-Scissors-Lizard-Spock!
+   ---------------------
+   The rules are simple...
+   Choose your "hand signal", and see if you beat the computer's choice!
+   ---------------------
+   Scissors cuts Paper covers Rock crushes
+   Lizard poisons Spock smashes Scissors
+   decapitates Lizard eats Paper disproves
+   Spock vaporizes Rock crushes Scissors
+   ---------------------
+  MSG
+
+  prompt(welcome_message)
 end
 
 def display_score(score)
@@ -99,12 +116,16 @@ def display_game_winner(score)
 end
 
 score = [0, 0]
+
+clear_screen
+
+display_welcome
 loop do
   choice = ''
   loop do
     # prompt("Choose one: #{VALID_CHOICES.join(', ')}")
     prompt("Choose one: (r)ock, (p)aper, (sc)issors, (l)izard, (sp)ock")
-    choice = Kernel.gets().chomp()
+    choice = Kernel.gets().chomp().downcase()
 
     if choice.size() == 1 || choice.size() == 2
       choice = interpret_abbrev(choice)
@@ -119,6 +140,8 @@ loop do
 
   computer_choice = VALID_CHOICES.sample()
 
+  clear_screen
+
   prompt("You chose: #{choice}; Computer chose: #{computer_choice}")
 
   display_result(choice, computer_choice)
@@ -130,7 +153,7 @@ loop do
     display_game_winner(score)
 
     prompt("Do you want to play again?")
-    answer = Kernel.gets().chomp()
+    answer = Kernel.gets().chomp().downcase()
     break unless answer.downcase().start_with?('y')
 
     reset_game(score)
@@ -138,3 +161,19 @@ loop do
 end
 
 prompt("Thank you for playing. Good bye!")
+
+=begin
+TODO
+- display game rules and a quick welcome before game begins***
+- clear the screen before the game starts for a "clean slate"***
+- clear the screen between rounds***
+- make user input case insensitive***
+- elimiate small repition in constants, call WINNING_MOVES.keys
+  for VALID_CHOICES
+- add an additional branch to conditional in tally_score to avoid computer being
+  awarded a point on a tie
+- extract 104-117 into a 'player choice' method
+- extra 132-143 to a 'play_again?' method (can break out of the loop with
+  something like 'break unless play_again?')
+  - make it so only 'n' or 'N' exits game at end
+=end

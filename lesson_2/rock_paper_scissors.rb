@@ -5,14 +5,14 @@ WINNING_MOVES = {
   'spock' => ['rock', 'scissors'],
   'lizard' => ['paper', 'spock']
 }
-VALID_CHOICES = WINNING_MOVES.keys
+VALID_CHOICES = WINNING_MOVES.keys()
 
 def prompt(message)
   Kernel.puts("=> #{message}")
 end
 
 def clear_screen
-  puts "\e[H\e[2J"
+  Kernel.puts("\e[H\e[2J")
 end
 
 def display_welcome
@@ -33,8 +33,8 @@ Welcome to Rock-Paper-Scissors-Lizard-Spock!
 end
 
 def start_game
-  clear_screen
-  display_welcome
+  clear_screen()
+  display_welcome()
 end
 
 def player_choice
@@ -43,7 +43,7 @@ def player_choice
     choice = Kernel.gets().chomp().downcase()
 
     if choice.size() == 1 || choice.size() == 2
-      return choice = interpret_abbrev(choice)
+      choice = interpret_abbrev(choice)
     end
 
     if VALID_CHOICES.include?(choice)
@@ -68,7 +68,7 @@ end
 def spock_or_scissors
   loop do
     prompt('Please input "sc" for scissors, or "sp" for spock')
-    new_abbr = gets().chomp()
+    new_abbr = Kernel.gets().chomp().downcase()
 
     if new_abbr == "sc"
       return "scissors"
@@ -132,7 +132,7 @@ def play_again?
     prompt("Do you want to play again? (y/n)")
     answer = Kernel.gets().chomp().downcase()
     break if answer == 'y' || answer == 'n'
-    puts "Please enter 'y' or 'n'"
+    Kernel.puts("Please enter 'y' or 'n'")
   end
 
   return true if answer == 'y'
@@ -142,17 +142,17 @@ end
 def reset_game(score)
   score[0] = 0
   score[1] = 0
-  clear_screen
+  clear_screen()
 end
 
 # Main game loop
-start_game
+start_game()
 score = [0, 0]
 loop do
-  choice = player_choice
+  choice = player_choice()
   computer_choice = VALID_CHOICES.sample()
 
-  clear_screen
+  clear_screen()
 
   prompt("You chose: #{choice}; Computer chose: #{computer_choice}")
 
@@ -165,7 +165,7 @@ loop do
   if game_over?(score)
     display_game_winner(score)
 
-    break unless play_again?
+    break unless play_again?()
 
     reset_game(score)
   end

@@ -135,9 +135,7 @@ def play_again?
     break if answer == 'y' || answer == 'n'
     Kernel.puts("Please enter 'y' or 'n'")
   end
-
-  return true if answer == 'y'
-  return false if answer == 'n'
+  answer == 'y'
 end
 
 def reset_game(score)

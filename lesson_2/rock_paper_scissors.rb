@@ -6,6 +6,7 @@ WINNING_MOVES = {
   'lizard' => ['paper', 'spock']
 }
 VALID_CHOICES = WINNING_MOVES.keys()
+WINNING_SCORE = 3
 
 def prompt(message)
   Kernel.puts("=> #{message}")
@@ -115,7 +116,7 @@ def display_score(score)
 end
 
 def game_over?(score)
-  return true if score[0] == 3 || score[1] == 3
+  return true if score[0] == WINNING_SCORE || score[1] == WINNING_SCORE
 end
 
 def display_game_winner(score)

@@ -163,9 +163,7 @@ loop do
 
   if game_over?(score)
     display_game_winner(score)
-
     break unless play_again?()
-
     reset_game(score)
   end
 end

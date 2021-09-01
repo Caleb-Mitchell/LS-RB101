@@ -69,3 +69,36 @@ def print_in_box(message)
    puts empty_line
    puts horizontal_rule
 end
+
+
+# The way I combined/remembered
+#
+CORNER_SYM = '+'
+HORIZONTAL_PAD = '-'
+VERTICAL_PAD = '|'
+
+def draw_outer_border(width)
+  puts "#{CORNER_SYM}#{HORIZONTAL_PAD * (width + 2)}#{CORNER_SYM}"
+end
+
+def draw_padded_border(width)
+  puts "#{VERTICAL_PAD}#{' ' * (width + 2)}#{VERTICAL_PAD}"
+end
+
+def draw_string_line(string)
+  puts "#{VERTICAL_PAD}#{' ' + string + ' '}#{VERTICAL_PAD}"
+end
+
+def put_it_in_a_box(string)
+  width = string.length
+  draw_outer_border(width)
+  draw_padded_border(width)
+  draw_string_line(string)
+  draw_padded_border(width)
+  draw_outer_border(width)
+end
+
+put_it_in_a_box('Caleb')
+put_it_in_a_box('Scott')
+put_it_in_a_box('FUCK')
+put_it_in_a_box('')

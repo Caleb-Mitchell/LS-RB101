@@ -34,7 +34,8 @@ C:
 def merge(array1, array2)
   # array2.each { |value| array1.push(value) unless array1.include?(value) }
   # array1
-  array1.union(array2)
+  # array1.union(array2)
+  array1 | array2
 end
 
 puts merge([1, 3, 5], [3, 6, 9]) == [1, 3, 5, 6, 9]

@@ -17,24 +17,26 @@
 # - split string by chars, store in string_array
 # - initialize empty array to store substrings
 # - for char in array of chars,
-#   - initialize substring variable to ''
+#   - initialize sub_string variable to ''
 #   - initialize accumulator variable to ''
-#   - push char to substring
-#   - push substring to accumulator
-#   - push accumulator to string_array
+#   - concatenate char to sub_string
+#   - push sub_string to string_array
 # - return string_array
+
 def leading_substrings(string)
-  chars = string.chars
   sub_string = ''
   string_array = []
+
+  chars = string.chars
+
   chars.each do |chr|
     sub_string += chr
     string_array.push(sub_string)
   end
+
   string_array
 end
 
 puts leading_substrings('abc') == ['a', 'ab', 'abc']
 puts leading_substrings('a') == ['a']
 puts leading_substrings('xyzzy') == ['x', 'xy', 'xyz', 'xyzz', 'xyzzy']
-

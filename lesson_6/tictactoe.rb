@@ -6,15 +6,19 @@ COMPUTER_MARKER = 'O'
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
                 [[1, 5, 9], [3, 5, 7]]              # diagonals
+POINTS_TO_WIN = 2
 
 def prompt(msg)
   puts "=> #{msg}"
 end
 
-# rubocop:disable Metrics/AbcSize
-def display_board(brd)
+# rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+def display_board(brd, player_score, computer_score)
   # system 'clear'
   puts "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
+  puts "--Current Score-- (First to #{POINTS_TO_WIN} wins!)"
+  puts "Player: #{player_score}"
+  puts "Computer: #{computer_score}"
   puts ""
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
@@ -29,7 +33,7 @@ def display_board(brd)
   puts "     |     |"
   puts ""
 end
-# rubocop:enable Metrics/AbcSize
+# rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
 def initialize_board
   new_board = {}
@@ -41,21 +45,6 @@ def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
 end
 
-# Problem:
-# - write a method called joinor that, given an array, and up to two additional
-# arguments, returns a string.
-# Input:
-# - an array, a delimiter, and a word other than 'or' for the last word
-# Output:
-# - a string, with the elements joined by the delimiter, and the word before the
-# last element
-# Rules:
-# * the delimiter is only present when there are more than two elements
-# - the word 'or' should be used by default if not specified
-# Algorithm:
-# - create new empty string to push concatenate array elements to
-# - if only two elements
-#   - shovel element, then 'word', then element
 def joinor(arr, delimeter=', ', word='or')
   case arr.size
   when 0 then ''
@@ -80,7 +69,11 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  square = empty_squares(brd).sample
+  square = if threat?(brd)
+             threat_location(brd)
+           else
+             empty_squares(brd).sample
+           end
   brd[square] = COMPUTER_MARKER
 end
 
@@ -98,9 +91,9 @@ def detect_winner(brd)
     #    brd[line[1]] == PLAYER_MARKER &&
     #    brd[line[2]] == PLAYER_MARKER
     #   return 'Player'
-    # elsif brd[line[0]] == PLAYER_MARKER &&
-    #       brd[line[1]] == PLAYER_MARKER &&
-    #       brd[line[2]] == PLAYER_MARKER
+    # elsif brd[line[0]] == COMPUTER_MARKER &&
+    #       brd[line[1]] == COMPUTER_MARKER &&
+    #       brd[line[2]] == COMPUTER_MARKER
     #   return 'Computer'
     # end
     if brd.values_at(*line).count(PLAYER_MARKER) == 3
@@ -112,25 +105,65 @@ def detect_winner(brd)
   nil
 end
 
+def threat?(brd)
+  WINNING_LINES.each do |line|
+    return true if brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
+                   brd.values_at(*line).count(" ") == 1
+  end
+  false
+end
+
+# Given the board, return the location of a threatened square, represented by
+# it's place in the brd hash
+def threat_location(brd)
+  WINNING_LINES.each do |line|
+    if brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
+       brd[line[2]] == " "
+      return line[2]
+    elsif brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
+          brd[line[1]] == " "
+      return line[1]
+    elsif brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
+          brd[line[0]] == " "
+      return line[0]
+    end
+  end
+end
+
 loop do
-  board = initialize_board
+  # First player to POINTS_TO_WIN wins
+  player_score = 0
+  computer_score = 0
 
   loop do
-    display_board(board)
+    board = initialize_board
 
-    player_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
+    loop do
+      display_board(board, player_score, computer_score)
 
-    computer_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
+      player_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+
+      computer_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+    end
+
+    display_board(board, player_score, computer_score)
+
+    if someone_won?(board)
+      prompt "#{detect_winner(board)} won!"
+      detect_winner(board) == 'Player' ? player_score += 1 : computer_score += 1
+    else
+      prompt "It's a tie!"
+    end
+
+    break if player_score == POINTS_TO_WIN || computer_score == POINTS_TO_WIN
   end
 
-  display_board(board)
-
-  if someone_won?(board)
-    prompt "#{detect_winner(board)} won!"
-  else
-    prompt "It's a tie!"
+  if player_score == POINTS_TO_WIN
+    prompt "You are the grand winner!"
+  elsif computer_score == POINTS_TO_WIN
+    prompt "Sorry, the computer wins this time."
   end
 
   prompt "Play again? (y or n)"

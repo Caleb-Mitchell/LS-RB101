@@ -6,7 +6,7 @@ COMPUTER_MARKER = 'O'
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
                 [[1, 5, 9], [3, 5, 7]]              # diagonals
-POINTS_TO_WIN = 2
+POINTS_TO_WIN = 5
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -14,7 +14,7 @@ end
 
 # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
 def display_board(brd, player_score, computer_score)
-  # system 'clear'
+  system 'clear'
   puts "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
   puts "--Current Score-- (First to #{POINTS_TO_WIN} wins!)"
   puts "Player: #{player_score}"
@@ -68,33 +68,12 @@ def player_places_piece!(brd)
   brd[square] = PLAYER_MARKER
 end
 
-def possible_comp_win?(brd)
-  WINNING_LINES.each do |line|
-    return true if brd.values_at(*line).count(COMPUTER_MARKER) == 2 &&
-                   brd.values_at(*line).count(" ") == 1
-  end
-  false
-end
-
-def comp_winning_move(brd)
-  WINNING_LINES.each do |line|
-    if comp_opening?(brd, line)
-      return brd.select { |k, v| line.include?(k) && v == ' ' }.keys.first
-    end
-  end
-end
-
-def comp_opening?(brd, line)
-  brd.values_at(*line).count(COMPUTER_MARKER) == 2 &&
-    brd.values_at(*line).count(" ") == 1
-end
-
 def computer_places_piece!(brd)
-  # square = board_threat?(brd) ? threat_location(brd) : empty_squares(brd).sample
-  square = if possible_comp_win?(brd)
-             comp_winning_move(brd)
-           elsif board_threat?(brd)
-             threat_location(brd)
+  # square = if possible_comp_win?(brd)
+  square = if board_threat?(brd, COMPUTER_MARKER)
+             threat_location(brd, COMPUTER_MARKER)
+           elsif board_threat?(brd, PLAYER_MARKER)
+             threat_location(brd, PLAYER_MARKER)
            elsif brd[5] == INITIAL_MARKER
              5
            else
@@ -122,22 +101,22 @@ def detect_winner(brd)
   nil
 end
 
-def line_threat?(brd, line)
-  brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
+def line_threat?(brd, line, marker)
+  brd.values_at(*line).count(marker) == 2 &&
     brd.values_at(*line).count(" ") == 1
 end
 
-def board_threat?(brd)
+def board_threat?(brd, marker)
   WINNING_LINES.each do |line|
-    return true if brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
+    return true if brd.values_at(*line).count(marker) == 2 &&
                    brd.values_at(*line).count(" ") == 1
   end
   false
 end
 
-def threat_location(brd)
+def threat_location(brd, marker)
   WINNING_LINES.each do |line|
-    if line_threat?(brd, line)
+    if line_threat?(brd, line, marker)
       return brd.select { |k, v| line.include?(k) && v == ' ' }.keys.first
     end
   end

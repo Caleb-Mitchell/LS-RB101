@@ -144,6 +144,8 @@ loop do
 
     if someone_won?(board)
       prompt "#{detect_winner(board)} won!"
+      prompt "Hit any key to continue"
+      gets
       detect_winner(board) == 'Player' ? player_score += 1 : computer_score += 1
     else
       prompt "It's a tie!"
@@ -164,3 +166,5 @@ loop do
 end
 
 prompt "Thanks for playing Tic Tac Toe! Good bye!"
+# TODO add any necessary explanation comments of code that doesn't explain
+# itself

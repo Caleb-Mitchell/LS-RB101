@@ -68,8 +68,38 @@ def player_places_piece!(brd)
   brd[square] = PLAYER_MARKER
 end
 
+def possible_comp_win?(brd)
+  WINNING_LINES.each do |line|
+    return true if brd.values_at(*line).count(COMPUTER_MARKER) == 2 &&
+                   brd.values_at(*line).count(" ") == 1
+  end
+  false
+end
+
+def comp_winning_move(brd)
+  WINNING_LINES.each do |line|
+    if comp_opening?(brd, line)
+      return brd.select { |k, v| line.include?(k) && v == ' ' }.keys.first
+    end
+  end
+end
+
+def comp_opening?(brd, line)
+  brd.values_at(*line).count(COMPUTER_MARKER) == 2 &&
+    brd.values_at(*line).count(" ") == 1
+end
+
 def computer_places_piece!(brd)
-  square = board_threat?(brd) ? threat_location(brd) : empty_squares(brd).sample
+  # square = board_threat?(brd) ? threat_location(brd) : empty_squares(brd).sample
+  square = if possible_comp_win?(brd)
+             comp_winning_move(brd)
+           elsif board_threat?(brd)
+             threat_location(brd)
+           elsif brd[5] == INITIAL_MARKER
+             5
+           else
+             empty_squares(brd).sample
+           end
   brd[square] = COMPUTER_MARKER
 end
 

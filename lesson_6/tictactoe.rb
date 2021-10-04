@@ -69,11 +69,7 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  square = if threat?(brd)
-             threat_location(brd)
-           else
-             empty_squares(brd).sample
-           end
+  square = board_threat?(brd) ? threat_location(brd) : empty_squares(brd).sample
   brd[square] = COMPUTER_MARKER
 end
 
@@ -87,15 +83,6 @@ end
 
 def detect_winner(brd)
   WINNING_LINES.each do |line|
-    # if brd[line[0]] == PLAYER_MARKER &&
-    #    brd[line[1]] == PLAYER_MARKER &&
-    #    brd[line[2]] == PLAYER_MARKER
-    #   return 'Player'
-    # elsif brd[line[0]] == COMPUTER_MARKER &&
-    #       brd[line[1]] == COMPUTER_MARKER &&
-    #       brd[line[2]] == COMPUTER_MARKER
-    #   return 'Computer'
-    # end
     if brd.values_at(*line).count(PLAYER_MARKER) == 3
       return 'Player'
     elsif brd.values_at(*line).count(COMPUTER_MARKER) == 3
@@ -105,7 +92,12 @@ def detect_winner(brd)
   nil
 end
 
-def threat?(brd)
+def line_threat?(brd, line)
+  brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
+    brd.values_at(*line).count(" ") == 1
+end
+
+def board_threat?(brd)
   WINNING_LINES.each do |line|
     return true if brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
                    brd.values_at(*line).count(" ") == 1
@@ -113,19 +105,10 @@ def threat?(brd)
   false
 end
 
-# Given the board, return the location of a threatened square, represented by
-# it's place in the brd hash
 def threat_location(brd)
   WINNING_LINES.each do |line|
-    if brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
-       brd[line[2]] == " "
-      return line[2]
-    elsif brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
-          brd[line[1]] == " "
-      return line[1]
-    elsif brd.values_at(*line).count(PLAYER_MARKER) == 2 &&
-          brd[line[0]] == " "
-      return line[0]
+    if line_threat?(brd, line)
+      return brd.select { |k, v| line.include?(k) && v == ' ' }.keys.first
     end
   end
 end

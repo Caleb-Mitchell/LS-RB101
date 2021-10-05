@@ -12,6 +12,16 @@ def prompt(msg)
   puts "=> #{msg}"
 end
 
+def display_welcome
+  welcome_message = <<-MSG
+  ====Welcome to TicTacToe====
+  Would you like to choose who goes first?
+  (If not, the computer will choose randomly)
+  Please enter (y)es or (n)o:
+  MSG
+  prompt(welcome_message)
+end
+
 # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
 def display_board(brd, player_score, computer_score)
   system 'clear'
@@ -123,6 +133,13 @@ def threat_location(brd, marker)
 end
 
 loop do
+  display_welcome
+  player_choice = gets.chomp.downcase.chr == 'y'
+  
+  # if player_choice == true, as the player who should go first
+  # if false, have the computer choose randomly
+  # implement alternate_player and place_piece TODO
+
   # First player to POINTS_TO_WIN wins
   player_score = 0
   computer_score = 0

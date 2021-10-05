@@ -4,7 +4,7 @@ COMPUTER_MARKER = 'O'
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
                 [[1, 5, 9], [3, 5, 7]]              # diagonals
-POINTS_TO_WIN = 2
+POINTS_TO_WIN = 5
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -22,12 +22,12 @@ def display_welcome
 end
 
 # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-def display_board(brd, player_score, computer_score)
+def display_board(brd, score)
   system 'clear'
   puts "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
   puts "--Current Score-- (First to #{POINTS_TO_WIN} wins!)"
-  puts "Player: #{player_score}"
-  puts "Computer: #{computer_score}"
+  puts "Player: #{score[:player]}"
+  puts "Computer: #{score[:computer]}"
   puts ""
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
@@ -48,6 +48,10 @@ def initialize_board
   new_board = {}
   (1..9).each { |num| new_board[num] = INITIAL_MARKER }
   new_board
+end
+
+def initialize_score
+  { player: 0, computer: 0 }
 end
 
 def empty_squares(brd)
@@ -163,55 +167,76 @@ def set_who_goes_first
   current_player
 end
 
-def display_game_winner(brd)
+def display_game_winner(brd, score)
+  system 'clear'
+  display_board(brd, score)
   prompt "#{detect_winner(brd)} won!"
-  prompt "Hit any key to continue"
+  prompt "Hit any key to continue."
   gets
 end
 
+def display_tie
+  prompt "It's a tie!"
+  prompt "Hit any key to continue."
+  gets
+end
+
+def display_grand_winner(score)
+  if score[:player] == POINTS_TO_WIN
+    system 'clear'
+    prompt "You are the grand winner!"
+  elsif score[:computer] == POINTS_TO_WIN
+    system 'clear'
+    prompt "Sorry, the computer wins this time."
+  end
+end
+
+def play_again?
+  prompt "Play again? (y or n)"
+  answer = gets.chomp
+  answer.downcase.start_with?('n') ? false : true
+end
+
+def increment_score!(score, brd)
+  case detect_winner(brd)
+  when 'Player' then score[:player] += 1
+  when 'Computer' then score[:computer] += 1
+  end
+end
+
+# Main loop, first to POINTS_TO_WIN wins
 loop do
+  score = initialize_score
+
   display_welcome
   current_player = set_who_goes_first
 
-  # First player to POINTS_TO_WIN wins
-  player_score = 0
-  computer_score = 0
-
+  # Inner game loop
   loop do
     board = initialize_board
 
     loop do
-      display_board(board, player_score, computer_score)
+      display_board(board, score)
       place_piece!(board, current_player)
       current_player = alternate_player(current_player)
       break if someone_won?(board) || board_full?(board)
     end
 
-    display_board(board, player_score, computer_score)
+    display_board(board, score)
 
     if someone_won?(board)
-      display_game_winner(board)
-      detect_winner(board) == 'Player' ? player_score += 1 : computer_score += 1
+      increment_score!(score, board)
+      display_game_winner(board, score)
     else
-      prompt "It's a tie!"
+      display_tie
     end
 
-    break if player_score == POINTS_TO_WIN || computer_score == POINTS_TO_WIN
+    break if score[:player] == POINTS_TO_WIN || score[:computer] == POINTS_TO_WIN
   end
 
-  if player_score == POINTS_TO_WIN
-    system 'clear'
-    prompt "You are the grand winner!"
-  elsif computer_score == POINTS_TO_WIN
-    system 'clear'
-    prompt "Sorry, the computer wins this time."
-  end
+  display_grand_winner(score)
 
-  prompt "Play again? (y or n)"
-  answer = gets.chomp
-  break if answer.downcase.start_with?('n')
+  break if !play_again?
 end
 
 prompt "Thanks for playing Tic Tac Toe! Good bye!"
-# TODO add any necessary explanation comments of code that doesn't explain
-# itself

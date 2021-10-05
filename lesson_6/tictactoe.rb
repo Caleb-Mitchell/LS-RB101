@@ -1,25 +1,24 @@
-require 'pry'
-
 INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = 'O'
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
                 [[1, 5, 9], [3, 5, 7]]              # diagonals
-POINTS_TO_WIN = 5
+POINTS_TO_WIN = 2
 
 def prompt(msg)
   puts "=> #{msg}"
 end
 
 def display_welcome
+  system 'clear'
   welcome_message = <<-MSG
   ====Welcome to TicTacToe====
   Would you like to choose who goes first?
   (If not, the computer will choose randomly)
   Please enter (y)es or (n)o:
   MSG
-  prompt(welcome_message)
+  puts welcome_message
 end
 
 # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
@@ -79,7 +78,6 @@ def player_places_piece!(brd)
 end
 
 def computer_places_piece!(brd)
-  # square = if possible_comp_win?(brd)
   square = if board_threat?(brd, COMPUTER_MARKER)
              threat_location(brd, COMPUTER_MARKER)
            elsif board_threat?(brd, PLAYER_MARKER)
@@ -132,13 +130,48 @@ def threat_location(brd, marker)
   end
 end
 
+def place_piece!(brd, current_player)
+  if current_player == 'Player'
+    player_places_piece!(brd)
+  else
+    computer_places_piece!(brd)
+  end
+end
+
+def alternate_player(current_player)
+  current_player = if current_player == 'Player'
+                     'Computer'
+                   else
+                     'Player'
+                   end
+  current_player
+end
+
+def set_who_goes_first
+  player_choice = gets.chomp.downcase
+  if player_choice.start_with?('y')
+    puts "Who should go first? (p)layer or (c)omputer?"
+    first_turn_choice = gets.chomp.downcase
+    current_player = if first_turn_choice.start_with?('p')
+                       'Player'
+                     else
+                       'Computer'
+                     end
+  else
+    current_player = ['Player', 'Computer'].sample
+  end
+  current_player
+end
+
+def display_game_winner(brd)
+  prompt "#{detect_winner(brd)} won!"
+  prompt "Hit any key to continue"
+  gets
+end
+
 loop do
   display_welcome
-  player_choice = gets.chomp.downcase.chr == 'y'
-  
-  # if player_choice == true, as the player who should go first
-  # if false, have the computer choose randomly
-  # implement alternate_player and place_piece TODO
+  current_player = set_who_goes_first
 
   # First player to POINTS_TO_WIN wins
   player_score = 0
@@ -149,20 +182,15 @@ loop do
 
     loop do
       display_board(board, player_score, computer_score)
-
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-
-      computer_places_piece!(board)
+      place_piece!(board, current_player)
+      current_player = alternate_player(current_player)
       break if someone_won?(board) || board_full?(board)
     end
 
     display_board(board, player_score, computer_score)
 
     if someone_won?(board)
-      prompt "#{detect_winner(board)} won!"
-      prompt "Hit any key to continue"
-      gets
+      display_game_winner(board)
       detect_winner(board) == 'Player' ? player_score += 1 : computer_score += 1
     else
       prompt "It's a tie!"
@@ -172,8 +200,10 @@ loop do
   end
 
   if player_score == POINTS_TO_WIN
+    system 'clear'
     prompt "You are the grand winner!"
   elsif computer_score == POINTS_TO_WIN
+    system 'clear'
     prompt "Sorry, the computer wins this time."
   end
 

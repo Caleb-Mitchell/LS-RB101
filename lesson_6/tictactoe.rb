@@ -231,7 +231,8 @@ loop do
       display_tie
     end
 
-    break if score[:player] == POINTS_TO_WIN || score[:computer] == POINTS_TO_WIN
+    break if score[:player] == POINTS_TO_WIN ||
+             score[:computer] == POINTS_TO_WIN
   end
 
   display_grand_winner(score)

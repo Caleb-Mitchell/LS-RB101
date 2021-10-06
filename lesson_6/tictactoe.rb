@@ -13,10 +13,11 @@ end
 def display_welcome
   system 'clear'
   welcome_message = <<-MSG
-  ====Welcome to TicTacToe====
-  Would you like to choose who goes first?
-  (If not, the computer will choose randomly)
-  Please enter (y)es or (n)o:
+
+       ====== Welcome to TicTacToe ======         
+                      --
+   Try to get 3 in a row, before the computer!
+                      --
   MSG
   puts welcome_message
 end
@@ -58,24 +59,25 @@ def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
 end
 
-def joinor(arr, delimeter=', ', word='or')
+def joinor(arr, delimiter=', ', word='or')
   case arr.size
   when 0 then ''
   when 1 then arr.first
   when 2 then arr.join(" #{word} ")
   else
     arr[-1] = "#{word} #{arr.last}"
-    arr.join(delimeter)
+    arr.join(delimiter)
   end
 end
 
 def player_places_piece!(brd)
   square = ''
   loop do
-    prompt "Choose a square (#{joinor(empty_squares(brd), '; ', 'and')}):"
+    prompt "Choose a square (#{joinor(empty_squares(brd), '|', 'and')}): "
     square = gets.chomp.to_i
     break if empty_squares(brd).include?(square)
     prompt "Sorry, that's not a valid choice."
+    puts ""
   end
 
   brd[square] = PLAYER_MARKER
@@ -143,28 +145,51 @@ def place_piece!(brd, current_player)
 end
 
 def alternate_player(current_player)
-  current_player = if current_player == 'Player'
-                     'Computer'
-                   else
+  current_player == 'Player' ? 'Computer' : 'Player'
+end
+
+def player_first_turn_choice
+  first_turn_choice = ''
+  loop do
+    puts ""
+    print "=> Who should go first? (p)layer or (c)omputer?: "
+    first_turn_choice = gets.chomp.downcase.chr
+    break if first_turn_choice == 'p' || first_turn_choice == 'c'
+    system 'clear'
+    prompt "Sorry, please enter either (p)layer, or (c)omputer. Try again."
+  end
+  current_player = if first_turn_choice.start_with?('p')
                      'Player'
+                   elsif first_turn_choice.start_with?('c')
+                     'Computer'
                    end
   current_player
 end
 
-def set_who_goes_first
-  player_choice = gets.chomp.downcase
-  if player_choice.start_with?('y')
-    puts "Who should go first? (p)layer or (c)omputer?"
-    first_turn_choice = gets.chomp.downcase
-    current_player = if first_turn_choice.start_with?('p')
-                       'Player'
-                     else
-                       'Computer'
-                     end
-  else
-    current_player = ['Player', 'Computer'].sample
-  end
+def determine_first_turn(turn_chooser)
+  current_player = if turn_chooser.start_with?('y')
+                     player_first_turn_choice
+                   else
+                     ['Player', 'Computer'].sample
+                   end
   current_player
+end
+
+def ask_player_who_should_choose
+  player_choice = ''
+  loop do
+    prompt "Would you like to choose who goes first?\n" \
+           "(If no, the computer will choose randomly)\n\n"
+
+    print "=> Please enter (y)es or (n)o: "
+
+    player_choice = gets.chomp.downcase
+    break if player_choice.start_with?('y') || player_choice.start_with?('n')
+    system 'clear'
+    puts "###Sorry, invalid input, please enter (y)es or (n)o. Try again.###"
+    puts "\n\n\n--"
+  end
+  player_choice
 end
 
 def display_game_winner(brd, score)
@@ -188,6 +213,7 @@ def display_grand_winner(score)
   elsif score[:computer] == POINTS_TO_WIN
     system 'clear'
     prompt "Sorry, the computer wins this time."
+    puts ""
   end
 end
 
@@ -204,12 +230,17 @@ def increment_score!(score, brd)
   end
 end
 
+def grand_winner?(score)
+  score[:player] == POINTS_TO_WIN || score[:computer] == POINTS_TO_WIN
+end
+
 # Main loop, first to POINTS_TO_WIN wins
 loop do
   score = initialize_score
 
   display_welcome
-  current_player = set_who_goes_first
+  turn_chooser = ask_player_who_should_choose
+  current_player = determine_first_turn(turn_chooser)
 
   # Inner game loop
   loop do
@@ -231,13 +262,12 @@ loop do
       display_tie
     end
 
-    break if score[:player] == POINTS_TO_WIN ||
-             score[:computer] == POINTS_TO_WIN
+    break if grand_winner?(score)
   end
 
   display_grand_winner(score)
 
-  break if !play_again?
+  break unless play_again?
 end
 
 prompt "Thanks for playing Tic Tac Toe! Good bye!"

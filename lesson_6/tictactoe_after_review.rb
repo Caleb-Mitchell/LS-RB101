@@ -120,7 +120,7 @@ def ask_player_who_should_choose
     player_choice = gets.chomp.downcase
     break if valid_yes_or_no?(player_choice)
     system 'clear'
-    puts "###Sorry, invalid input, please enter (y)es or (n)o. Try again.###"
+    puts "### Sorry, invalid input, please enter (y)es or (n)o. Try again. ###"
     puts "\n\n\n--"
   end
   player_choice

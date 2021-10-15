@@ -97,29 +97,20 @@ def display_current_hands(player_hand, dealer_hand)
   puts "You have: #{player_hand[0][:value]} and #{player_hand[1][:value]}"
 end
 
-def total_initial_score!(score, player_hand, dealer_hand)
-  score[:player] = player_hand[0][:points] + player_hand[1][:points]
-  score[:dealer] = dealer_hand[0][:points] + dealer_hand[1][:points]
+def tally_aces(hand)
+  num_aces = 0
+  hand.each do |card|
+    num_aces += 1 if card[:value] == 'Ace'
+  end
+  num_aces
 end
-
-# def tally_aces(hand)
-#   num_aces = 0
-#   hand.each do |card|
-#     if card[:value] == 'Ace'
-#       num_aces += 1
-#     end
-#   end
-#   num_aces
-# end
 
 def totaled_score!(score, hand, player_or_dealer)
   total_points = 0
-  num_aces = 0
+  num_aces = tally_aces(hand)
 
   hand.each do |card|
-    if card[:value] == 'Ace'
-      num_aces += 1
-    else
+    if !(card[:value] == 'Ace')
       total_points += card[:points]
     end
   end
@@ -130,44 +121,6 @@ def totaled_score!(score, hand, player_or_dealer)
   score[:player] = total_points if player_or_dealer == 'player'
   score[:dealer] = total_points if player_or_dealer == 'dealer'
 end
-
-# def totaled_score!(score, player_hand, dealer_hand, player_or_dealer)
-#   total_points = 0
-#   num_aces = 0
-#   if player_or_dealer == 'player'
-#     player_hand.each do |card|
-#       if card[:value] == 'Ace'
-#         num_aces += 1
-#       else
-#         total_points += card[:points]
-#       end
-#     end
-#     num_aces.times do
-#       unless (total_points + 11) > 21
-#         total_points += 11
-#       else
-#         total_points += 1
-#       end
-#     end
-#     score[:player] = total_points
-#   elsif player_or_dealer == 'dealer'
-#     dealer_hand.each do |card|
-#       if card[:value] == 'Ace'
-#         num_aces += 1
-#       else
-#         total_points += card[:points]
-#       end
-#     end
-#     num_aces.times do
-#       unless (total_points + 11) > 21
-#         total_points += 11
-#       else
-#         total_points += 1
-#       end
-#     end
-#     score[:dealer] = total_points
-#   end
-# end
 
 # hit! adds a card to the appropriate hand
 def hit!(player_hand, dealer_hand, deck, player_or_dealer)

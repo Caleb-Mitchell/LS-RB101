@@ -74,17 +74,11 @@ def valid_int?(num_str)
 end
 
 def valid_first_turn_choice?(first_turn_choice)
-  first_turn_choice == 'p' ||
-    first_turn_choice == 'player' ||
-    first_turn_choice == 'c' ||
-    first_turn_choice == 'computer'
+  ['p', 'player', 'c', 'computer'].include?(first_turn_choice)
 end
 
 def valid_yes_or_no?(user_input)
-  user_input == 'y' ||
-    user_input == 'yes' ||
-    user_input == 'n' ||
-    user_input == 'no'
+  ['y', 'yes', 'n', 'no'].include?(user_input)
 end
 
 def display_square_num_error(brd)
@@ -264,9 +258,9 @@ def play_again?
     puts ""
     prompt "Play again? (y)es or (n)o:"
     answer = gets.chomp
-    if answer == 'n' || answer == 'no'
+    if ['n', 'no'].include?(answer)
       return false
-    elsif answer == 'y' || answer == 'yes'
+    elsif ['y', 'yes'].include?(answer)
       return true
     else
       prompt "Invalid input, please enter (y)es or (n)o"

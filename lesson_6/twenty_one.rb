@@ -128,19 +128,28 @@ def busted?(score, player_or_dealer)
   end
 end
 
-def calculate_game_winner(score)
-  if !busted?(score, 'player') && !busted?(score, 'dealer')
-    if score[:player] == score[:dealer]
-      'tie'
-    elsif score[:player] > score[:dealer]
-      'player'
-    else
-      'dealer'
-    end
-  elsif !busted?(score, 'player') && busted?(score, 'dealer')
+def nobody_busted?(score)
+  score[:player] <= 21 && score[:dealer] <= 21
+end
+
+# only really need to calculate if neither person busted
+def calculate_no_bust_winner(score)
+  if score[:player] == score[:dealer]
+    'tie'
+  elsif score[:player] > score[:dealer]
     'player'
+  else
+    'dealer'
+  end
+end
+
+def calculate_game_winner(score)
+  if nobody_busted?(score)
+    calculate_no_bust_winner(score)
   elsif busted?(score, 'player') && !busted?(score, 'dealer')
     'dealer'
+  elsif !busted?(score, 'player') && busted?(score, 'dealer')
+    'player'
   else
     'tie'
   end

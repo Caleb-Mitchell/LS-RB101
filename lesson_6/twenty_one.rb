@@ -1,17 +1,3 @@
-require 'pry'
-require 'pry-byebug'
-=begin
-##1. Initialize deck
-##2. Deal cards to player and dealer
-3. Player turn: hit or stay
-  - repeat until bust or "stay"
-4. If player bust, dealer wins.
-5. Dealer turn: hit or stay
-  - repeat until total >= 17
-6. If dealer bust, player wins.
-7. Compare cards and declare winner.
-=end
-
 SUITS = %w(hearts diamonds clubs spades)
 VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
 
@@ -97,7 +83,7 @@ def display_current_hands(player_hand, dealer_hand)
   puts "You have: #{player_hand[0][:value]} and #{player_hand[1][:value]}"
 end
 
-def tally_aces(hand)
+def tally_num_aces(hand)
   num_aces = 0
   hand.each do |card|
     num_aces += 1 if card[:value] == 'Ace'
@@ -105,21 +91,24 @@ def tally_aces(hand)
   num_aces
 end
 
-def totaled_score!(score, hand, player_or_dealer)
-  total_points = 0
-  num_aces = tally_aces(hand)
-
+def tally_hand_minus_aces(hand)
+  hand_minus_aces = 0
   hand.each do |card|
-    if !(card[:value] == 'Ace')
-      total_points += card[:points]
-    end
+    hand_minus_aces += card[:points] unless card[:value] == 'Ace'
   end
+  hand_minus_aces
+end
+
+def totaled_score!(score, hand, player_or_dealer)
+  running_total = tally_hand_minus_aces(hand)
+
+  num_aces = tally_num_aces(hand)
   num_aces.times do
-    total_points += (total_points + 11) > 21 ? 1 : 11
+    running_total += (running_total + 11) > 21 ? 1 : 11
   end
 
-  score[:player] = total_points if player_or_dealer == 'player'
-  score[:dealer] = total_points if player_or_dealer == 'dealer'
+  score[:player] = running_total if player_or_dealer == 'player'
+  score[:dealer] = running_total if player_or_dealer == 'dealer'
 end
 
 # hit! adds a card to the appropriate hand

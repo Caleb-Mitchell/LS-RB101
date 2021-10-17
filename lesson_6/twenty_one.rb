@@ -1,10 +1,17 @@
+require 'pry'
+require 'pry-byebug'
 SUITS = %w(hearts diamonds clubs spades)
 VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
 WINNING_VALUE = 21
 DEALER_STAY_VALUE = 17
+POINTS_TO_WIN = 5
 
 def prompt(msg)
   puts "=> #{msg}"
+end
+
+def prompt_player_to_continue
+  prompt "Press Enter to continue."
 end
 
 def clear_screen
@@ -46,6 +53,7 @@ def deal_starting_hands(hands, deck)
   deal!(hands[:dealer], deck, 2)
 end
 
+# rubocop:disable Metrics/MethodLength
 def display_welcome
   clear_screen
   puts <<-MSG
@@ -65,12 +73,17 @@ def display_welcome
        jack, queen, king = 10
                      ace = 1 or 11
 
+                      --
+
+           - Playing to best of #{POINTS_TO_WIN}! - 
+
                   ==========
 
   MSG
-  prompt "Press Enter to continue."
+  prompt_player_to_continue
   gets
 end
+# rubocop:enable Metrics/MethodLength
 
 def card_list(hand)
   card_list = []
@@ -119,10 +132,11 @@ def totaled_score(hand)
   running_total
 end
 
-def display_game(hands, score)
+def display_game(hands, score, grand_score)
   clear_screen
   puts <<-GAME
-
+                 Grand Score
+              Player: #{grand_score[:player]} Dealer: #{grand_score[:dealer]}
          ============================
 
     Player hand: #{card_list(hands[:player]).join(', ')}
@@ -139,14 +153,14 @@ def display_game(hands, score)
 
 
 
-
   GAME
 end
 
-def display_game_with_secrets(hands, score)
+def display_game_with_secrets(hands, score, grand_score)
   clear_screen
   puts <<-GAME
-
+                 Grand Score
+              Player: #{grand_score[:player]} Dealer: #{grand_score[:dealer]}
          ============================
 
     Player hand: #{card_list(hands[:player]).join(', ')}
@@ -159,7 +173,6 @@ def display_game_with_secrets(hands, score)
                Dealer Points: ??
 
                   ==========
-
 
 
 
@@ -191,18 +204,35 @@ def update_score!(score, hands)
   score[:dealer] = totaled_score(hands[:dealer])
 end
 
-def display_outcome(score)
+def detect_outcome(score)
   if busted?(score[:player])
-    prompt "You busted, dealer wins."
+    'player_bust_dealer_win'
   elsif busted?(score[:dealer])
-    prompt "Dealer busted, you win!"
+    'dealer_bust_player_win'
   elsif score[:dealer] == score[:player]
-    prompt "It's a tie!"
+    'tie'
   elsif score[:player] > score[:dealer]
-    prompt "You win!"
+    'no_bust_player_win'
   elsif score[:dealer] > score[:player]
-    prompt "Sorry, dealer wins."
+    'no_bust_dealer_win'
   end
+end
+
+def display_outcome(score)
+  case detect_outcome(score)
+  when 'player_bust_dealer_win'
+    prompt "You busted, dealer wins this round.\n\n"
+  when 'dealer_bust_player_win'
+    prompt "Dealer busted, you win this round!\n\n"
+  when 'tie'
+    prompt "It's a tie!\n\n"
+  when 'no_bust_player_win'
+    prompt "You win this round!\n\n"
+  when 'no_bust_dealer_win'
+    prompt "Sorry, dealer wins this round.\n\n"
+  end
+  prompt "Press Enter to continue."
+  gets
 end
 
 def dealer_can_stop?(score)
@@ -211,13 +241,13 @@ end
 
 def display_dealer_hits
   prompt "Dealer hits!\n\n"
-  prompt "Press Enter to continue."
+  prompt_player_to_continue
   gets
 end
 
 def display_player_stay
   prompt "You chose to stay.\n\n"
-  prompt "Press Enter to continue."
+  prompt_player_to_continue
   gets
 end
 
@@ -238,58 +268,92 @@ def play_again?
   end
 end
 
+def initialize_grand_score
+  { player: 0, dealer: 0 }
+end
+
+def increment_grand_score!(score, grand_score)
+  case detect_outcome(score)
+  when 'player_bust_dealer_win' then grand_score[:dealer] += 1
+  when 'no_bust_dealer_win'     then grand_score[:dealer] += 1
+  when 'dealer_bust_player_win' then grand_score[:player] += 1
+  when 'no_bust_player_win'     then grand_score[:player] += 1
+  end
+end
+
+def grand_winner?(grand_score)
+  grand_score[:player] == POINTS_TO_WIN || grand_score[:dealer] == POINTS_TO_WIN
+end
+
+def display_grand_winner(grand_score)
+  if grand_score[:player] == POINTS_TO_WIN
+    clear_screen
+    prompt "You are the grand winner!!!"
+  elsif grand_score[:dealer] == POINTS_TO_WIN
+    clear_screen
+    prompt "Sorry, the dealer wins the game this time.\n\n"
+  end
+end
+
+# Outer loop, first to POINTS_TO_WIN wins
 loop do
   display_welcome
+  grand_score = initialize_grand_score
 
-  deck = initialize_deck
-  hands = initialize_hands
-  score = initialize_score
-
-  # Deal cards to player and dealer
-  deal_starting_hands(hands, deck)
-
-  # Total scores of cards first dealt
-  update_score!(score, hands)
-
-  # Player turn
   loop do
-    display_game_with_secrets(hands, score)
+    deck = initialize_deck
+    hands = initialize_hands
+    score = initialize_score
 
-    player_choice = ask_hit_or_stay
-    if player_choice.start_with?('h')
-      hit!(hands[:player], deck)
-      update_score!(score, hands)
-    end
+    # Deal cards to player and dealer
+    deal_starting_hands(hands, deck)
 
-    break if player_choice.start_with?('s') || busted?(score[:player])
-  end
-
-  if busted?(score[:player])
-    # Save player_busted to true, used to skip dealer turn
-    player_busted = true
-
-    display_game(hands, score)
-    display_outcome(score)
-  else
-    display_player_stay
-  end
-
-  # Dealer turn
-  loop do
-    break if dealer_can_stop?(score) ||
-             busted?(score[:dealer]) ||
-             player_busted
-
-    hit!(hands[:dealer], deck)
+    # Total scores of cards first dealt
     update_score!(score, hands)
 
-    display_game(hands, score)
-    display_dealer_hits
+    # Player turn
+    loop do
+      display_game_with_secrets(hands, score, grand_score)
+
+      player_choice = ask_hit_or_stay
+      if player_choice.start_with?('h')
+        hit!(hands[:player], deck)
+        update_score!(score, hands)
+      end
+
+      break if player_choice.start_with?('s') || busted?(score[:player])
+    end
+
+    if busted?(score[:player])
+      # Save player_busted to true, used to skip dealer turn
+      player_busted = true
+      display_game(hands, score, grand_score)
+    else
+      display_player_stay
+    end
+
+    # Dealer turn
+    loop do
+      break if dealer_can_stop?(score) ||
+               busted?(score[:dealer]) ||
+               player_busted
+
+      hit!(hands[:dealer], deck)
+      update_score!(score, hands)
+
+      display_game(hands, score, grand_score)
+      display_dealer_hits
+    end
+
+    display_game(hands, score, grand_score)
+
+    display_outcome(score)
+    increment_grand_score!(score, grand_score)
+
+    break if grand_winner?(grand_score)
   end
 
-  display_game(hands, score)
-  display_outcome(score)
-
+  display_grand_winner(grand_score)
   break unless play_again?
 end
 

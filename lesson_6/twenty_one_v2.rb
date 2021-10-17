@@ -19,6 +19,7 @@ def initialize_deck
       card[:suit] = suit
       card[:value] = value
       new_deck << card
+      puts "It's a tie!"
     end
   end
   new_deck
@@ -48,21 +49,19 @@ def display_welcome
 
          ====== Welcome to 21! ======         
 
-                      --
                   - Rules -
-                      --
+
    - The player and dealer are both dealt 2 random cards.
   
-   - Your goal is to get as close as you can to 21 points without going over,
-     but higher than the dealer's total.
+   - Your goal is to get as close as you can to 21 points,
+     without going over but higher than the dealer's total.
 
-                      --
                   - Points -
-                      --
+
               Cards 2-10 = equal to face value
        jack, queen, king = 10
                      ace = 1 or 11
-                     
+
                   ==========
 
   MSG
@@ -76,6 +75,13 @@ def card_list(hand)
     card_list << "#{card[:value]} of #{card[:suit]}"
   end
   card_list
+end
+
+def card_list_with_secret(hand)
+  card_list = []
+  
+  card_list << "#{hand[0][:value]} of #{hand[0][:suit]}"
+  card_list << "?? of ??"
 end
 
 def tally_num_aces(hand)
@@ -115,23 +121,44 @@ def display_game(hands, score)
 
          ============================
 
+    Player hand: #{card_list(hands[:player]).join(', ')}
 
+    Dealer hand: #{card_list(hands[:dealer]).join(', ')}
 
+                     ----
 
-
-  Player has: #{card_list(hands[:player]).join(', ')}
-
-  Dealer has: #{card_list(hands[:dealer]).join(', ')}
-
-
-  Player Points: #{score[:player]}
-  Dealer Points: #{score[:dealer]}
-
-
-
-
+               Player Points: #{score[:player]}
+               Dealer Points: #{score[:dealer]}
 
                   ==========
+
+
+
+
+
+  GAME
+end
+
+def display_game_with_secrets(hands, score)
+  clear_screen
+  puts <<-GAME
+
+         ============================
+
+    Player hand: #{card_list(hands[:player]).join(', ')}
+
+    Dealer hand: #{card_list_with_secret(hands[:dealer]).join(', ')}
+
+                     ----
+
+               Player Points: #{score[:player]}
+               Dealer Points: ??
+
+                  ==========
+
+
+
+
 
   GAME
 end
@@ -139,10 +166,10 @@ end
 def ask_hit_or_stay
   player_choice = ''
   loop do
-    puts "Would you like to (h)it or (s)tay?"
+    prompt "Would you like to (h)it or (s)tay?"
     player_choice = gets.chomp
     break if ['h', 'hit', 's', 'stay'].include?(player_choice)
-    puts "Sorry, not a valid choice, please try again."
+    prompt "Sorry, not a valid choice, please try again."
   end
   player_choice
 end
@@ -151,7 +178,7 @@ def hit!(hand, deck)
   deal!(hand, deck, 1)
 end
 
-def bust?(score)
+def busted?(score)
   score > 21
 end
 
@@ -161,58 +188,115 @@ def update_score!(score, hands)
 end
 
 def display_outcome(score)
-  if bust?(score[:player])
-    puts "You busted, dealer wins."
-  elsif bust?(score[:dealer])
-    puts "Dealer busted, you win!"
+  if busted?(score[:player])
+    prompt "You busted, dealer wins."
+  elsif busted?(score[:dealer])
+    prompt "Dealer busted, you win!"
+  elsif score[:dealer] == score[:player]
+    prompt "It's a tie!"
   elsif score[:player] > score[:dealer]
-    puts "You win!"
+    prompt "You win!"
   elsif score[:dealer] > score[:player]
-    puts "Sorry, dealer wins."
+    prompt "Sorry, dealer wins."
   end
 end
 
-# Initialize deck
-display_welcome
-deck = initialize_deck
-hands = initialize_hands
-score = initialize_score
+def dealer_can_stop?(score)
+  score[:dealer] >= 17 && !busted?(score[:dealer])
+end
 
-# Deal cards to player and dealer
-deal!(hands[:player], deck, 2)
-deal!(hands[:dealer], deck, 2)
+def display_dealer_hits
+  prompt "Dealer hits!\n\nPress enter to continue"
+  gets
+end
 
-# Total scores of cards first dealt
-update_score!(score, hands)
+def display_player_stay
+  prompt "You chose to stay.\n\nPress Enter to continue"
+  gets
+end
 
-# Player turn
-#   - repeat until bust or "stay"
+def display_press_enter
+  prompt "Press Enter to continue"
+  gets
+end
+
+def play_again?
+  answer = ''
+  loop do
+    puts ""
+    prompt "Play again? (y)es or (n)o:"
+    answer = gets.chomp
+    if ['n', 'no'].include?(answer)
+      return false
+    elsif ['y', 'yes'].include?(answer)
+      return true
+    else
+      prompt "Invalid input, please enter (y)es or (n)o"
+      next
+    end
+  end
+end
+
 loop do
-  # Display game with hidden dealer values # TODO
-  display_game(hands, score)
+  display_welcome
+  display_press_enter
 
-  player_choice = ask_hit_or_stay
-  if player_choice.start_with?('h')
-    hit!(hands[:player], deck)
-    update_score!(score, hands)
-  end
+  deck = initialize_deck
+  hands = initialize_hands
+  score = initialize_score
 
-  break if player_choice.start_with?('s') || bust?(score[:player])
-end
+  # Deal cards to player and dealer
+  deal!(hands[:player], deck, 2)
+  deal!(hands[:dealer], deck, 2)
 
-if bust?(score[:player])
-  player_busted = true
+  # Total scores of cards first dealt
   update_score!(score, hands)
 
+  # Player turn
+  loop do
+    display_game_with_secrets(hands, score)
+
+    player_choice = ask_hit_or_stay
+    if player_choice.start_with?('h')
+      hit!(hands[:player], deck)
+      update_score!(score, hands)
+    end
+
+    break if player_choice.start_with?('s') || busted?(score[:player])
+  end
+
+  if busted?(score[:player])
+    # Save player_busted to true, used to skip dealer turn
+    player_busted = true
+
+    update_score!(score, hands)
+    display_game(hands, score)
+    display_outcome(score)
+
+    # break unless play_again?
+  else
+    display_player_stay
+  end
+
+  # Dealer turn
+  loop do
+    break if dealer_can_stop?(score) ||
+             busted?(score[:dealer]) ||
+             player_busted
+
+    hit!(hands[:dealer], deck)
+    update_score!(score, hands)
+
+    display_game(hands, score)
+    display_dealer_hits
+  end
+
+  update_score!(score, hands)
   display_game(hands, score)
   display_outcome(score)
+
+  break unless play_again?
 end
 
-# 5. Dealer turn: hit or stay
-#   - repeat until total >= 17
-# loop do
-#   break if player_busted
-# end
-
-# 6. If dealer bust, player wins.
-# 7. Compare cards and declare winner.
+prompt "Thanks for playing!"
+# TODO order methods

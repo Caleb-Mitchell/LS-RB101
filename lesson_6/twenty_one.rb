@@ -1,7 +1,7 @@
-require 'pry'
-require 'pry-byebug'
 SUITS = %w(hearts diamonds clubs spades)
 VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
+WINNING_VALUE = 21
+DEALER_STAY_VALUE = 17
 
 def prompt(msg)
   puts "=> #{msg}"
@@ -19,7 +19,6 @@ def initialize_deck
       card[:suit] = suit
       card[:value] = value
       new_deck << card
-      puts "It's a tie!"
     end
   end
   new_deck
@@ -69,6 +68,8 @@ def display_welcome
                   ==========
 
   MSG
+  prompt "Press Enter to continue."
+  gets
 end
 
 def card_list(hand)
@@ -112,7 +113,7 @@ def totaled_score(hand)
 
   num_aces = tally_num_aces(hand)
   num_aces.times do
-    running_total += (running_total + 11) > 21 ? 1 : 11
+    running_total += (running_total + 11) > WINNING_VALUE ? 1 : 11
   end
 
   running_total
@@ -182,7 +183,7 @@ def hit!(hand, deck)
 end
 
 def busted?(score)
-  score > 21
+  score > WINNING_VALUE
 end
 
 def update_score!(score, hands)
@@ -205,20 +206,17 @@ def display_outcome(score)
 end
 
 def dealer_can_stop?(score)
-  score[:dealer] >= 17 && !busted?(score[:dealer])
+  score[:dealer] >= DEALER_STAY_VALUE && !busted?(score[:dealer])
 end
 
 def display_dealer_hits
-  prompt "Dealer hits!\n\nPress enter to continue."
+  prompt "Dealer hits!\n\n"
+  prompt "Press Enter to continue."
   gets
 end
 
 def display_player_stay
-  prompt "You chose to stay.\n\nPress Enter to continue."
-  gets
-end
-
-def display_press_enter
+  prompt "You chose to stay.\n\n"
   prompt "Press Enter to continue."
   gets
 end
@@ -242,7 +240,6 @@ end
 
 loop do
   display_welcome
-  display_press_enter
 
   deck = initialize_deck
   hands = initialize_hands
@@ -271,7 +268,6 @@ loop do
     # Save player_busted to true, used to skip dealer turn
     player_busted = true
 
-    update_score!(score, hands)
     display_game(hands, score)
     display_outcome(score)
   else
@@ -291,7 +287,6 @@ loop do
     display_dealer_hits
   end
 
-  update_score!(score, hands)
   display_game(hands, score)
   display_outcome(score)
 

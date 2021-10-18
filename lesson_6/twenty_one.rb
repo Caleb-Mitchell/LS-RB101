@@ -1,5 +1,3 @@
-require 'pry'
-require 'pry-byebug'
 SUITS = %w(Hearts Diamonds Clubs Spades)
 VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
 WINNING_VALUE = 21
@@ -305,10 +303,7 @@ loop do
     hands = initialize_hands
     score = initialize_score
 
-    # Deal cards to player and dealer
     deal_starting_hands(hands, deck)
-
-    # Total scores of cards first dealt
     update_score!(score, hands)
 
     # Player turn
@@ -325,8 +320,7 @@ loop do
     end
 
     if busted?(score[:player])
-      # Save player_busted to true, used to skip dealer turn
-      player_busted = true
+      player_busted = true # Used to skip now unnecessary dealer turn
     else
       display_player_stay
     end
@@ -356,7 +350,4 @@ loop do
   break unless play_again?
 end
 
-prompt "Thanks for playing!"
-
-# TODO remove any unecessary comments, leave only organization comments
-# everything else should be self explanatory in code
+prompt "Thanks for playing 21!"

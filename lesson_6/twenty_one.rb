@@ -1,6 +1,6 @@
 require 'pry'
 require 'pry-byebug'
-SUITS = %w(hearts diamonds clubs spades)
+SUITS = %w(Hearts Diamonds Clubs Spades)
 VALUES = %w(2 3 4 5 6 7 8 9 10 Jack Queen King Ace)
 WINNING_VALUE = 21
 DEALER_STAY_VALUE = 17
@@ -98,7 +98,7 @@ def card_list_with_secret(hand)
   card_list = []
 
   card_list << "#{hand[0][:value]} of #{hand[0][:suit]}"
-  card_list << "?? of ??"
+  card_list << "??"
 end
 
 def tally_num_aces(hand)
@@ -135,7 +135,7 @@ end
 def display_game(hands, score, grand_score)
   clear_screen
   puts <<-GAME
-                 Grand Score
+                -Grand Score-
               Player: #{grand_score[:player]} Dealer: #{grand_score[:dealer]}
          ============================
 
@@ -159,7 +159,7 @@ end
 def display_game_with_secrets(hands, score, grand_score)
   clear_screen
   puts <<-GAME
-                 Grand Score
+                -Grand Score-
               Player: #{grand_score[:player]} Dealer: #{grand_score[:dealer]}
          ============================
 
@@ -327,7 +327,6 @@ loop do
     if busted?(score[:player])
       # Save player_busted to true, used to skip dealer turn
       player_busted = true
-      display_game(hands, score, grand_score)
     else
       display_player_stay
     end
@@ -345,10 +344,10 @@ loop do
       display_dealer_hits
     end
 
-    display_game(hands, score, grand_score)
-
-    display_outcome(score)
     increment_grand_score!(score, grand_score)
+
+    display_game(hands, score, grand_score)
+    display_outcome(score)
 
     break if grand_winner?(grand_score)
   end
@@ -358,3 +357,6 @@ loop do
 end
 
 prompt "Thanks for playing!"
+
+# TODO remove any unecessary comments, leave only organization comments
+# everything else should be self explanatory in code

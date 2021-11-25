@@ -1,0 +1,11 @@
+
+adjectives:
+  ["quick", "lazy", "sleepy", "ugly"]
+nouns:
+  ["fox", "dog", "head", "leg"]
+verbs:
+  ["jumps", "lifts", "bites", "licks"]
+adverbs:
+  ["easily", "lazily", "noisily", "excitedly"]
+colors:
+  ["blue", "yellow", "green", "purple"]
